@@ -5,6 +5,7 @@ This repo will soon contain a docker image and kubernetes resource YAMLs for bac
 
 The basic gist is as follows:
 - Kubelet mounts pod volumes as `/var/lib/kubelet/pods/<pod_uuid>/volumes/<volume_type>/<volume_name>`
+  - NOTE! `volume_name` here refers to the "VOLUME" attribute listed in `kubectl get pvc` output, NOT the "NAME" attribute
 - By iterating over `/var/lib/kubelet/pods/*/volumes/*/*`, we can run operations on each mounted volume on a k8s node
   - For example, by iterating over `/var/lib/kubelet/pods/*/volumes/kubernetes.io~nfs/*`, we can back up each mounted NFS volume.
 - This backup operation can be done in a pod, by running it as root and mounting `/var/lib/kubelet/pods/` using `hostPath`
