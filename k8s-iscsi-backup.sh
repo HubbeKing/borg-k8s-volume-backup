@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# This script backs up all k8s iSCSI volumes mounted to the current machine using borg
+
 REPOSITORY=/path/to/borg/repo
 VOLUME_TYPE='kubernetes.io~iscsi'
 
