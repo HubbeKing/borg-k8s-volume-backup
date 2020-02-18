@@ -5,11 +5,12 @@ import subprocess
 import sys
 
 REPOSITORY = os.environ.get("REPOSITORY", None)
-VOLUME_TYPE = os.environ.get("VOLUME_TYPE", None)
+# default to in-tree kubernetes.io iscsi volume type
+VOLUME_TYPE = os.environ.get("VOLUME_TYPE", "kubernetes.io~iscsi")
 K8S_NAMESPACE = os.environ.get("K8S_NAMESPACE", "default")
 BORG_PASSPHRASE = os.environ.get("BORG_PASSPHRASE", None)
 
-if None in (REPOSITORY, VOLUME_TYPE, BORG_PASSPHRASE):
+if None in (REPOSITORY, BORG_PASSPHRASE):
     print("Required ENV vars not set!")
     sys.exit(1)
 
