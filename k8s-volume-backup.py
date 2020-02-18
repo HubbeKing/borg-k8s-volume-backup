@@ -22,6 +22,7 @@ pvc_data = json.loads(json_fetch.stdout.decode("utf-8"))
 pvc_data = pvc_data.get("items", [])
 
 # turn PVC data list into a dict of volumeName to metadata name
+# 'get pvc' output has the volume name in .spec.volumeName and the metadata name in .metadata.name
 pvc_data = { item["spec"]["volumeName"] : item["metadata"]["name"] for item in pvc_data }
 
 # initialize borg repo if it doesn't already exist
@@ -36,5 +37,10 @@ for volume in glob.glob(f"/var/lib/kubelet/pods/*/volumes/{VOLUME_TYPE}/*"):
     # get the pvc metadata name using the parsed get pvc output
     pvc_name = pvc_data.get(volume_name, "")
     if pvc_name:
-        # create a borg archive named according to YYYY-MM-DD-pvc.metadata.name, containing a single folder with pvc.spec.volumeName as its name
-        borg_create = subprocess.check_call(["borg", "create", "-v", "--stats", "--compression", "auto,zstd", f"{REPOSITORY}::\{now:%Y-%m-%d\}-{pvc_name}", volume_name], cwd=os.path.dirname(volume), env={"BORG_PASSPHRASE": BORG_PASSPHRASE})
+        # create a borg archive named according to YYYY-MM-DD-pvc.metadata.name
+        # contents of archive will be identical to contents of PVC at time of archive creation, to simplify backup restore
+        # to restore a backup to the current folder: 'borg extract ${REPOSITORY}::YYYY-MM-DD-pvc.metadata.name'
+        borg_create = subprocess.check_call(["borg", "create", "-v", "--stats", "--compression", "auto,zstd", 
+                                             f"{REPOSITORY}::\{now:%Y-%m-%d\}-{pvc_name}", "./*"],
+                                            cwd=volume,
+                                            env={"BORG_PASSPHRASE": BORG_PASSPHRASE})
