@@ -24,3 +24,5 @@ This repo will soon contain a docker image and kubernetes resource YAMLs for bac
   - Run backup script in container to back up all mounted PVCs on the kubernetes node
 - Create a `DaemonSet`, so that one can easily back up all PVCs in a cluster by running the container on each node
   - Maybe even a `DaemonJob`, if that gets merged.
+- Create a docker container that can do restore operations
+- Create a `Job` template file that can be used to easily restore a borg backup archive to a PVC
