@@ -10,6 +10,7 @@ This repo will soon contain a docker image and kubernetes resource YAMLs for bac
   - For example, by iterating over `/var/lib/kubelet/pods/*/volumes/kubernetes.io~iscsi/*`, we can back up each mounted iSCSI volume.
 
 ### Short-term Goals
+- Done, see `k8s-volume-backup.py` - requires python3
 - Create generic script that uses env variables for volume type, borg repo location, and borg passphrase
 - Use `kubectl get pvc` in backup script to get all PVCs, and build a volume name to PVC name dictionary
 - Use this dictionary to save backups using the PVC name rather than the volume name
