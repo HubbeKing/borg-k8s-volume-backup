@@ -37,4 +37,4 @@ for volume in glob.glob(f"/var/lib/kubelet/pods/*/volumes/{VOLUME_TYPE}/*"):
     pvc_name = pvc_data.get(volume_name, "")
     if pvc_name:
         # create a borg archive named according to YYYY-MM-DD-pvc.metadata.name, containing a single folder with pvc.spec.volumeName as its name
-        borg_create = subprocess.check_call(["borg", "create", "-v", "--stats", "--compression", "auto,zstd", f"{REPOSITORY}::\{now:%Y-%m-%d\}-{pvc_name}", volume_name], cwd=os.path.dirname(volume))
+        borg_create = subprocess.check_call(["borg", "create", "-v", "--stats", "--compression", "auto,zstd", f"{REPOSITORY}::\{now:%Y-%m-%d\}-{pvc_name}", volume_name], cwd=os.path.dirname(volume), env={"BORG_PASSPHRASE": BORG_PASSPHRASE})
