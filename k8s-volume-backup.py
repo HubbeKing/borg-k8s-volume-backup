@@ -41,6 +41,6 @@ for volume in glob.glob(f"/var/lib/kubelet/pods/*/volumes/{VOLUME_TYPE}/*"):
         # contents of archive will be identical to contents of PVC at time of archive creation, to simplify backup restore
         # to restore a backup to the current folder: 'borg extract ${REPOSITORY}::YYYY-MM-DD-pvc.metadata.name'
         borg_create = subprocess.check_call(["borg", "create", "-v", "--stats", "--compression", "auto,zstd", 
-                                             f"{REPOSITORY}::\{now:%Y-%m-%d\}-{pvc_name}", "./*"],
+                                            f"{REPOSITORY}::\{now:%Y-%m-%d\}-{pvc_name}", "./*"],
                                             cwd=volume,
                                             env={"BORG_PASSPHRASE": BORG_PASSPHRASE})
