@@ -18,7 +18,7 @@ if None in (REPOSITORY, BORG_PASSPHRASE):
 json_fetch = subprocess.check_output(["kubectl", "--namespace", K8S_NAMESPACE, "get", "pvc", "-o", "json"])
 
 # get items from output, this is the list/array of PVCs in the namespace
-pvc_data = json.loads(json_fetch.stdout.decode("utf-8"))
+pvc_data = json.loads(json_fetch.decode("utf-8"))
 pvc_data = pvc_data.get("items", [])
 
 # turn PVC data list into a dict of volumeName to metadata name
@@ -37,10 +37,11 @@ for volume in glob.glob(f"/var/lib/kubelet/pods/*/volumes/{VOLUME_TYPE}/*"):
     # get the pvc metadata name using the parsed get pvc output
     pvc_name = pvc_data.get(volume_name, "")
     if pvc_name:
-        # create a borg archive named according to YYYY-MM-DD-pvc.metadata.name
-        # contents of archive will be identical to contents of PVC at time of archive creation, to simplify backup restore
+        # create a borg archive named according to YYYY-MM-DD-pvc.metadata.name, cd-ing into the volume directory first
+        # contents of archive will be identical to contents of the PVC at time of archive creation, to simplify backup restore
         # to restore a backup to the current folder: 'borg extract ${REPOSITORY}::YYYY-MM-DD-pvc.metadata.name'
-        borg_create = subprocess.check_call(["borg", "create", "-v", "--stats", "--compression", "auto,zstd", 
-                                            f"{REPOSITORY}::\{now:%Y-%m-%d\}-{pvc_name}", "./*"],
-                                            cwd=volume,
-                                            env={"BORG_PASSPHRASE": BORG_PASSPHRASE})
+        # example backup command : borg create /mnt/repo::2020-02-01-sonarr ./*
+        # example restory command: borg extract /mnt/repo::2020-02-01-sonarr
+        subprocess.check_call(["borg", "create", "-v", "--stats", "--compression", "auto,zstd", 
+                              f"{REPOSITORY}::{{now:%Y-%m-%d}}-{pvc_name}", "./*"],
+                              cwd=volume, env={"BORG_PASSPHRASE": BORG_PASSPHRASE})
