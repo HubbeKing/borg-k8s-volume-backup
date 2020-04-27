@@ -40,8 +40,8 @@ for volume in glob.glob(f"/var/lib/kubelet/pods/*/volumes/{VOLUME_TYPE}/*"):
         # create a borg archive named according to YYYY-MM-DD-pvc.metadata.name, cd-ing into the volume directory first
         # contents of archive will be identical to contents of the PVC at time of archive creation, to simplify backup restore
         # to restore a backup to the current folder: 'borg extract ${REPOSITORY}::YYYY-MM-DD-pvc.metadata.name'
-        # example backup command : borg create /mnt/repo::2020-02-01-sonarr ./*
+        # example backup command : borg create /mnt/repo::2020-02-01-sonarr .
         # example restory command: borg extract /mnt/repo::2020-02-01-sonarr
-        subprocess.check_call(["borg", "create", "-v", "--stats", "--compression", "auto,zstd", 
-                              f"{REPOSITORY}::{{now:%Y-%m-%d}}-{pvc_name}", "./*"],
+        subprocess.check_call(["borg", "create", "-v", "--stats", "--compression", "auto,zstd",
+                              f"{REPOSITORY}::{{now:%Y-%m-%d}}-{pvc_name}", "."],
                               cwd=volume, env={"BORG_PASSPHRASE": BORG_PASSPHRASE})
