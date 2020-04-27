@@ -37,11 +37,17 @@ for volume in glob.glob(f"/var/lib/kubelet/pods/*/volumes/{VOLUME_TYPE}/*"):
     # get the pvc metadata name using the parsed get pvc output
     pvc_name = pvc_data.get(volume_name, "")
     if pvc_name:
-        # create a borg archive named according to YYYY-MM-DD-pvc.metadata.name, cd-ing into the volume directory first
+        # create a borg archive named according to pvc.metadata.name-YYYY-MM-DD, cd-ing into the volume directory first
         # contents of archive will be identical to contents of the PVC at time of archive creation, to simplify backup restore
-        # to restore a backup to the current folder: 'borg extract ${REPOSITORY}::YYYY-MM-DD-pvc.metadata.name'
-        # example backup command : borg create /mnt/repo::2020-02-01-sonarr .
-        # example restory command: borg extract /mnt/repo::2020-02-01-sonarr
+        # to restore a backup to the current folder: 'borg extract ${REPOSITORY}::pvc.metadata.name-YYYY-MM-DD'
+        # example backup command : borg create /mnt/repo::sonarr-2020-02-01 .
+        # example restory command: borg extract /mnt/repo::sonarr-2020-02-01
         subprocess.check_call(["borg", "create", "-v", "--stats", "--compression", "auto,zstd",
-                              f"{REPOSITORY}::{{now:%Y-%m-%d}}-{pvc_name}", "."],
+                              f"{REPOSITORY}::{pvc_name}-{{now:%Y-%m-%d}}", "."],
                               cwd=volume, env={"BORG_PASSPHRASE": BORG_PASSPHRASE})
+
+        # prune borg repo, removing old backups for this pvc_name
+        # note the --prefix, to limit pruning
+        subprocess.check_call(["borg", "prune", "-v", "--list", REPOSITORY, "--prefix", pvc_name,
+                              "--keep-daily=7", "--keep-weekly=4", "--keep-monthly=6", "--keep-yearly=1"],
+                              env={"BORG_PASSPHRASE": BORG_PASSPHRASE})
